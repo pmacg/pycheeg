@@ -76,7 +76,7 @@ def cheeger_cut(G):
     # Compute the key graph matrices
     adjacency_matrix = nx.adjacency_matrix(G)
     laplacian_matrix = nx.normalized_laplacian_matrix(G)
-    graph_degrees = [t[1] for t in G.degree(G)]
+    graph_degrees = [t[1] for t in nx.degree(G)]
 
     # Compute the second smallest eigenvalue of the laplacian matrix
     eig_vals, eig_vecs = sp.sparse.linalg.eigsh(laplacian_matrix, which="SM", k=2)
