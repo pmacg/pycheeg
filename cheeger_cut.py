@@ -8,18 +8,18 @@ import scipy.sparse.linalg
 import networkx as nx
 
 
-def sweep_set(A, v_2, degrees):
+def sweep_set(adjacency_matrix, v_2, degrees):
     """
     Given the adjacency matrix of a graph, and the second eigenvalue of the laplacian matrix, use the sweep set
     algorithm to find a sparse cut.
 
-    :param A: The adjacency matrix of the graph to use.
+    :param adjacency_matrix: The adjacency matrix of the graph to use.
     :param v_2: The second eigenvector of the laplacian matrix of the graph
     :param degrees: a list with the degrees of each vertex in the graph
     :return: The set of vertices corresponding to the optimal cut
     """
     # Calculate n here once
-    n = A.shape[0]
+    n = adjacency_matrix.shape[0]
 
     # Keep track of the best cut so far
     best_cut_index = None
@@ -33,11 +33,11 @@ def sweep_set(A, v_2, degrees):
     cut_weight = 0
 
     # Normalise v_2 with the degrees of each vertex
-    D = sp.sparse.diags(degrees, 0)
-    v_2 = D.power(-(1/2)).dot(v_2)
+    degree_matrix = sp.sparse.diags(degrees, 0)
+    v_2 = degree_matrix.power(-(1/2)).dot(v_2)
 
     # First, sort the vertices based on their value in the second eigenvector
-    sorted_vertices = [i for i, v in sorted(enumerate(v_2), key=(lambda x: x[1]))]
+    sorted_vertices = [i for i, v in sorted(enumerate(v_2), key=(lambda y: y[1]))]
 
     # Keep track of which edges to add/subtract from the cut each time
     x = np.ones(n)
@@ -51,7 +51,7 @@ def sweep_set(A, v_2, degrees):
         # From now on, edges to this vertex will be removed from the cut at each iteration.
         x[v] = -1
 
-        additional_weight = A[v, :].dot(x)
+        additional_weight = adjacency_matrix[v, :].dot(x)
         cut_weight += additional_weight
 
         # Calculate the conductance
@@ -66,22 +66,22 @@ def sweep_set(A, v_2, degrees):
     return sorted_vertices[:best_cut_index+1]
 
 
-def cheeger_cut(G):
+def cheeger_cut(graph):
     """
     Given a networkx graph G, find the cheeger cut.
 
-    :param G: The graph on which to operate
+    :param graph: The graph on which to operate
     :return: A set containing the vertices on one side of the cheeger cut
     """
     # Compute the key graph matrices
-    adjacency_matrix = nx.adjacency_matrix(G)
-    laplacian_matrix = nx.normalized_laplacian_matrix(G)
-    graph_degrees = [t[1] for t in nx.degree(G)]
+    adjacency_matrix = nx.adjacency_matrix(graph)
+    laplacian_matrix = nx.normalized_laplacian_matrix(graph)
+    graph_degrees = [t[1] for t in nx.degree(graph)]
 
     # Compute the second smallest eigenvalue of the laplacian matrix
     eig_vals, eig_vecs = sp.sparse.linalg.eigsh(laplacian_matrix, which="SM", k=2)
     v_2 = eig_vecs[:, 1]
 
     # Perform the sweep set operation to find the sparsest cut
-    S = sweep_set(adjacency_matrix, v_2, graph_degrees)
-    return S
+    cheeger_set = sweep_set(adjacency_matrix, v_2, graph_degrees)
+    return cheeger_set
