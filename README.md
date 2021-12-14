@@ -1,5 +1,7 @@
 # Sweep-set graph algorithms
 
+**This package has been deprecated in favour of the [SGTL library](https://github.com/pmacg/py-sgtl).**
+
 This repository gives some straightforward implementations of two closely related
 fundamental algorithms in spectral graph theory:
 - the cheeger sweep set algorithm for finding low-conductance sets and
